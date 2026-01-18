@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Promotion & Gift Game - 5 Stages</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Company Promotion & Gift Game - Movable</title>
     <style>
         :root {
             --primary-wood: #d4a373;
@@ -23,6 +23,7 @@
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             -webkit-tap-highlight-color: transparent;
+            user-select: none; /* Prevents text selection during play */
         }
 
         body {
@@ -31,6 +32,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            overflow: hidden; /* Prevent body scroll */
         }
 
         /* --- Header --- */
@@ -42,6 +44,7 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: var(--shadow);
+            flex-shrink: 0;
         }
 
         .logo {
@@ -58,23 +61,32 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 10px;
             position: relative;
+            overflow-y: auto; /* Allow internal scrolling if needed, but game fits screen */
         }
 
         .section {
             display: none;
             width: 100%;
-            max-width: 500px; /* Slightly narrower for focus */
+            max-width: 450px;
             background: var(--white);
             border-radius: 12px;
-            padding: 2rem;
+            padding: 1.5rem;
             box-shadow: var(--shadow);
             animation: fadeIn 0.4s ease;
+            touch-action: pan-y; /* Allow vertical scroll in sections */
         }
 
         .section.active {
             display: block;
+        }
+
+        /* Disable scroll specifically on game section to allow swiping blocks */
+        #game-section {
+            touch-action: none;
+            overflow: hidden;
+            background: #fff0e0;
         }
 
         @keyframes fadeIn {
@@ -111,6 +123,7 @@
             text-decoration: none;
             font-weight: bold;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            touch-action: manipulation;
         }
 
         .btn:active { transform: scale(0.98); }
@@ -139,10 +152,6 @@
         }
 
         /* --- Game UI --- */
-        #game-section {
-            background: #fff0e0;
-        }
-
         .level-badge {
             background: var(--dark-wood);
             color: #fff;
@@ -169,12 +178,12 @@
             position: relative;
             margin: 0 auto;
             width: 280px;
-            height: 350px; /* 4x5 aspect ratio roughly */
+            height: 350px;
             background-color: var(--board-bg);
             border: 8px solid var(--dark-wood);
             border-radius: 6px;
             box-shadow: inset 0 0 15px rgba(0,0,0,0.2);
-            overflow: hidden; /* Prevent blocks spilling out visually */
+            touch-action: none; /* Crucial for swiping blocks */
         }
 
         .exit-zone {
@@ -182,7 +191,7 @@
             bottom: -5px;
             left: 50%;
             transform: translateX(-50%);
-            width: 140px; /* 2 blocks wide */
+            width: 140px;
             height: 10px;
             background-color: rgba(0,255,0,0.2);
             border-top: 2px dashed #333;
@@ -195,7 +204,7 @@
             border: 1px solid var(--block-border);
             border-radius: 4px;
             box-shadow: inset 1px 1px 2px rgba(255,255,255,0.3), 1px 1px 3px rgba(0,0,0,0.3);
-            cursor: pointer;
+            cursor: grab;
             transition: top 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), left 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
             display: flex;
             justify-content: center;
@@ -203,6 +212,12 @@
             font-size: 20px;
             color: #fff;
             z-index: 10;
+            touch-action: none; /* Prevents browser handling of touch on blocks */
+        }
+
+        .block:active {
+            cursor: grabbing;
+            transform: scale(0.98); /* Visual feedback when touching */
         }
 
         .block.main-block {
@@ -223,7 +238,7 @@
         .modal-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.8);
             display: none;
             justify-content: center;
             align-items: center;
@@ -247,10 +262,6 @@
         .share-btn { padding: 10px; border: none; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .share-btn:disabled { background-color: #ccc; cursor: default; }
 
-        /* Responsive tweaks */
-        @media (max-width: 360px) {
-            .game-board-container { transform: scale(0.9); }
-        }
     </style>
 </head>
 <body>
@@ -268,7 +279,7 @@
     <!-- 1. HOME PAGE -->
     <section id="home-section" class="section active">
         <h1>Win Exclusive Gifts!</h1>
-        <p>Solve 5 levels of puzzles to claim your reward.</p>
+        <p>Solve 5 levels of puzzles. <strong>Slide blocks to move.</strong></p>
         <div style="text-align: center; margin-bottom: 20px;">
             <span class="level-badge" id="home-level-badge">Current Progress: Level 1</span>
         </div>
@@ -318,7 +329,7 @@
     <!-- 4. CLAIM PAGE -->
     <section id="claim-section" class="section">
         <h2>Final Verification</h2>
-        <p>To ship your gift, please send this offer to 5 friends to unlock the form.</p>
+        <p>To ship your gift, please send this offer to 5 friends.</p>
         
         <div class="progress-container">
             <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
@@ -360,10 +371,9 @@
     ];
 
     // Grid is 4 columns x 5 rows
-    // Block Types: 2=Main(2x2), 1=Vertical(1x2), -1=Horizontal(2x1), 0=Small(1x1)
     const LEVELS = [
         {
-            // Level 1: Very Simple (1 min)
+            // Level 1: 1 Minute (60s)
             time: 60,
             blocks: [
                 { id: 'main', type: 2, x: 1, y: 0, w: 2, h: 2 },
@@ -379,7 +389,7 @@
             ]
         },
         {
-            // Level 2: Moderate (1.5 min)
+            // Level 2: 1.5 Min (90s)
             time: 90,
             blocks: [
                 { id: 'main', type: 2, x: 1, y: 0, w: 2, h: 2 },
@@ -394,13 +404,13 @@
             ]
         },
         {
-            // Level 3: Tricky (2 min)
+            // Level 3: 2 Min (120s)
             time: 120,
             blocks: [
-                { id: 'main', type: 2, x: 1, y: 1, w: 2, h: 2 }, // Main centered vertically
+                { id: 'main', type: 2, x: 1, y: 1, w: 2, h: 2 },
                 { id: 'v1', type: 1, x: 0, y: 0, w: 1, h: 2 },
-                { id: 'v2', type: 1, x: 1, y: 0, w: 1, h: 1 }, // Small vertical acting as 1x1
-                { id: 'v3', type: 1, x: 2, y: 0, w: 1, h: 1 }, // Small vertical acting as 1x1
+                { id: 'v2', type: 1, x: 1, y: 0, w: 1, h: 1 },
+                { id: 'v3', type: 1, x: 2, y: 0, w: 1, h: 1 },
                 { id: 'v4', type: 1, x: 3, y: 0, w: 1, h: 2 },
                 { id: 's1', type: 0, x: 1, y: 3, w: 1, h: 1 },
                 { id: 's2', type: 0, x: 2, y: 3, w: 1, h: 1 },
@@ -409,7 +419,7 @@
             ]
         },
         {
-            // Level 4: Hard (3 min) - Main starts left
+            // Level 4: 3 Min (180s)
             time: 180,
             blocks: [
                 { id: 'main', type: 2, x: 0, y: 0, w: 2, h: 2 },
@@ -426,7 +436,7 @@
             ]
         },
         {
-            // Level 5: Advanced (5 min) - Dense packing
+            // Level 5: 5 Min (300s)
             time: 300,
             blocks: [
                 { id: 'main', type: 2, x: 1, y: 0, w: 2, h: 2 },
@@ -434,8 +444,8 @@
                 { id: 'v2', type: 1, x: 3, y: 0, w: 1, h: 2 },
                 { id: 'v3', type: 1, x: 0, y: 2, w: 1, h: 2 },
                 { id: 'v4', type: 1, x: 3, y: 2, w: 1, h: 2 },
-                { id: 'v5', type: 1, x: 0, y: 4, w: 1, h: 1 }, // Used as 1x1 here
-                { id: 'v6', type: 1, x: 3, y: 4, w: 1, h: 1 }, // Used as 1x1 here
+                { id: 'v5', type: 1, x: 0, y: 4, w: 1, h: 1 },
+                { id: 'v6', type: 1, x: 3, y: 4, w: 1, h: 1 },
                 { id: 's1', type: 0, x: 1, y: 2, w: 1, h: 1 },
                 { id: 's2', type: 0, x: 2, y: 2, w: 1, h: 1 },
                 { id: 's3', type: 0, x: 1, y: 3, w: 1, h: 1 },
@@ -454,10 +464,23 @@
     let inviteCount = 0;
     const MAX_LEVELS = 5;
 
+    /* --- DRAG STATE --- */
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let activeBlockId = null;
+    let isDragging = false;
+
     /* --- INIT --- */
     document.addEventListener('DOMContentLoaded', () => {
         renderTestimonials();
         updateHomeProgress();
+        
+        // Global Drag Listeners
+        document.addEventListener('mousemove', handleGlobalMove);
+        document.addEventListener('touchmove', handleGlobalMove, { passive: false });
+        
+        document.addEventListener('mouseup', handleGlobalEnd);
+        document.addEventListener('touchend', handleGlobalEnd);
     });
 
     function renderTestimonials() {
@@ -479,7 +502,6 @@
     }
 
     function updateHomeProgress() {
-        // Display the level the user is about to play
         let text = `Start Level ${currentLevel}`;
         if (currentLevel > MAX_LEVELS) text = "You have completed all levels!";
         document.getElementById('home-level-badge').textContent = text;
@@ -487,7 +509,6 @@
 
     function goToGame() {
         if (currentLevel > MAX_LEVELS) {
-            alert("You have already completed all stages! Please claim your gift.");
             showSection('win-section');
             return;
         }
@@ -508,17 +529,13 @@
     /* --- GAME LOGIC --- */
     function loadLevel(lvlIndex) {
         const levelData = LEVELS[lvlIndex - 1];
-        
-        // Deep copy blocks
         blocks = JSON.parse(JSON.stringify(levelData.blocks));
-        
         moves = 0;
         timeLeft = levelData.time;
         gameActive = true;
         
         document.getElementById('level-display').textContent = lvlIndex;
         
-        // Reset Timer UI
         const timerEl = document.getElementById('timer');
         timerEl.classList.remove('timer-warning');
         updateTimerDisplay();
@@ -577,7 +594,6 @@
         setTimeout(() => board.style.transform = "translate(-5px, -5px)", 100);
         setTimeout(() => board.style.transform = "none", 200);
         
-        // Simple feedback
         const msg = document.createElement('div');
         msg.textContent = "Time Up! Try Again.";
         msg.style.position = 'absolute';
@@ -604,24 +620,88 @@
         blocks.forEach(block => {
             const el = document.createElement('div');
             el.className = `block ${block.id === 'main' ? 'main-block' : ''}`;
-            // 25% width = 1 col, 20% height = 1 row
             el.style.width = (block.w * 25) + '%';
             el.style.height = (block.h * 20) + '%';
             el.style.left = (block.x * 25) + '%';
             el.style.top = (block.y * 20) + '%';
             el.dataset.id = block.id;
-            el.onclick = (e) => {
-                e.stopPropagation(); // prevent clicking board bg
-                handleBlockClick(block);
-            };
+            
+            // Attach Touch/Mouse Start events
+            el.addEventListener('mousedown', (e) => startDrag(e, block));
+            el.addEventListener('touchstart', (e) => startDrag(e, block), { passive: false });
+            
             board.appendChild(el);
         });
+    }
+
+    /* --- DRAG & MOVE LOGIC --- */
+
+    function startDrag(e, block) {
+        if (!gameActive) return;
+        e.preventDefault(); // Prevent text selection
+        
+        activeBlockId = block.id;
+        isDragging = true;
+        
+        if (e.type === 'touchstart') {
+            dragStartX = e.touches[0].clientX;
+            dragStartY = e.touches[0].clientY;
+        } else {
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+        }
+    }
+
+    function handleGlobalMove(e) {
+        if (!isDragging) return;
+        e.preventDefault(); // Prevent screen scrolling while dragging block
+    }
+
+    function handleGlobalEnd(e) {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        let endX, endY;
+        if (e.type === 'touchend') {
+            endX = e.changedTouches[0].clientX;
+            endY = e.changedTouches[0].clientY;
+        } else {
+            endX = e.clientX;
+            endY = e.clientY;
+        }
+
+        const diffX = endX - dragStartX;
+        const diffY = endY - dragStartY;
+        const threshold = 15; // Min pixels to count as a swipe
+
+        const block = blocks.find(b => b.id === activeBlockId);
+
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            // Horizontal
+            if (Math.abs(diffX) > threshold) {
+                if (diffX > 0) tryMove(block, 1, 0); // Right
+                else tryMove(block, -1, 0); // Left
+            } else {
+                // Small movement, try click logic (find any valid move)
+                handleBlockClick(block);
+            }
+        } else {
+            // Vertical
+            if (Math.abs(diffY) > threshold) {
+                if (diffY > 0) tryMove(block, 0, 1); // Down
+                else tryMove(block, 0, -1); // Up
+            } else {
+                // Small movement, try click logic
+                handleBlockClick(block);
+            }
+        }
+        
+        activeBlockId = null;
     }
 
     function handleBlockClick(block) {
         if (!gameActive) return;
         const dirs = [{dx:0, dy:-1}, {dx:0, dy:1}, {dx:-1, dy:0}, {dx:1, dy:0}];
-        
         for (let d of dirs) {
             if (canMove(block, d.dx, d.dy)) {
                 moveBlock(block, d.dx, d.dy);
@@ -630,12 +710,18 @@
         }
     }
 
+    function tryMove(block, dx, dy) {
+        if (!gameActive) return;
+        if (canMove(block, dx, dy)) {
+            moveBlock(block, dx, dy);
+        }
+    }
+
     function canMove(block, dx, dy) {
         const newX = block.x + dx;
         const newY = block.y + dy;
         if (newX < 0 || newX + block.w > 4 || newY < 0 || newY + block.h > 5) return false;
 
-        // Collision Check
         for (let other of blocks) {
             if (other.id === block.id) continue;
             if (newX < other.x + other.w && newX + block.w > other.x &&
@@ -657,11 +743,8 @@
 
     function checkWin() {
         const main = blocks.find(b => b.id === 'main');
-        // Main is 2x2. Win pos is x=1, y=3 (occupying 1,3 to 3,5 area logic)
-        // Target: Center bottom.
         if (main.x === 1 && main.y === 3) {
             stopGame();
-            // Show Next Level Modal
             setTimeout(() => {
                 document.getElementById('level-modal').style.display = 'flex';
             }, 300);
