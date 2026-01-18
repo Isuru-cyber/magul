@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Company Promotion & Gift Game - 5 Stages</title>
+    <style>
+        :root {
+            --primary-wood: #d4a373;
+            --dark-wood: #8b5a2b;
+            --light-wood: #faedcd;
+            --board-bg: #e6ccb2;
+            --block-border: #5c4033;
+            --highlight: #ff5a5f;
+            --text-color: #333;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #f9f9f9;
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* --- Header --- */
+        header {
+            background-color: var(--dark-wood);
+            color: var(--white);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow);
+        }
+
+        .logo {
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- Main Layout --- */
+        main {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        .section {
+            display: none;
+            width: 100%;
+            max-width: 500px; /* Slightly narrower for focus */
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.4s ease;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h1, h2 {
+            color: var(--dark-wood);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .btn {
+            background-color: var(--highlight);
+            color: var(--white);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.1s, background-color 0.2s;
+            display: block;
+            margin: 20px auto;
+            width: 100%;
+            max-width: 250px;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .btn:active { transform: scale(0.98); }
+        .btn:hover { background-color: #e0484d; }
+        .btn:disabled { background-color: #ccc; cursor: not-allowed; transform: none; }
+        
+        .btn-secondary {
+            background-color: var(--primary-wood);
+        }
+        .btn-secondary:hover { background-color: #c08d5b; }
+
+        /* --- Comments --- */
+        .testimonials {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .comment-card {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            text-align: center;
+            border-top: 3px solid var(--primary-wood);
+        }
+
+        /* --- Game UI --- */
+        #game-section {
+            background: #fff0e0;
+        }
+
+        .level-badge {
+            background: var(--dark-wood);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--dark-wood);
+            background: var(--light-wood);
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid var(--primary-wood);
+        }
+
+        .game-board-container {
+            position: relative;
+            margin: 0 auto;
+            width: 280px;
+            height: 350px; /* 4x5 aspect ratio roughly */
+            background-color: var(--board-bg);
+            border: 8px solid var(--dark-wood);
+            border-radius: 6px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.2);
+            overflow: hidden; /* Prevent blocks spilling out visually */
+        }
+
+        .exit-zone {
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 140px; /* 2 blocks wide */
+            height: 10px;
+            background-color: rgba(0,255,0,0.2);
+            border-top: 2px dashed #333;
+            z-index: 5;
+        }
+
+        .block {
+            position: absolute;
+            background: linear-gradient(135deg, var(--primary-wood), #a67c52);
+            border: 1px solid var(--block-border);
+            border-radius: 4px;
+            box-shadow: inset 1px 1px 2px rgba(255,255,255,0.3), 1px 1px 3px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: top 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), left 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            color: #fff;
+            z-index: 10;
+        }
+
+        .block.main-block {
+            background: linear-gradient(135deg, #e76f51, #c0392b);
+            border-color: #8e2b21;
+        }
+        .block.main-block::after {
+            content: "★";
+            font-size: 28px;
+            color: #ffd700;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .timer-warning { color: #d32f2f; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        /* --- Modal for Next Level --- */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            border-radius: 12px;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* --- Win/Claim Styles --- */
+        .gift-box { font-size: 60px; margin: 10px auto; display: block; text-align: center; }
+        .progress-container { background: #eee; border-radius: 10px; padding: 10px; margin: 15px 0; }
+        .progress-bar { height: 15px; background: var(--highlight); border-radius: 8px; width: 0%; transition: width 0.3s; }
+        .share-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .share-btn { padding: 10px; border: none; color: white; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .share-btn:disabled { background-color: #ccc; cursor: default; }
+
+        /* Responsive tweaks */
+        @media (max-width: 360px) {
+            .game-board-container { transform: scale(0.9); }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <div class="logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        WoodGifts Co.
+    </div>
+    <div style="font-size: 0.8rem;">Promo Event</div>
+</header>
+
+<main>
+
+    <!-- 1. HOME PAGE -->
+    <section id="home-section" class="section active">
+        <h1>Win Exclusive Gifts!</h1>
+        <p>Solve 5 levels of puzzles to claim your reward.</p>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <span class="level-badge" id="home-level-badge">Current Progress: Level 1</span>
+        </div>
+        
+        <button class="btn" onclick="goToGame()">Play Now</button>
+
+        <h3>Winners Comments</h3>
+        <div class="testimonials" id="testimonials-container"></div>
+    </section>
+
+    <!-- 2. GAME PAGE -->
+    <section id="game-section" class="section">
+        <div class="game-stats">
+            <span>Level: <span id="level-display">1</span>/5</span>
+            <span>Time: <span id="timer">01:00</span></span>
+        </div>
+        <div class="game-board-container" id="board">
+            <div class="exit-zone"></div>
+            <!-- Blocks generated by JS -->
+        </div>
+        
+        <!-- Level Complete Modal -->
+        <div class="modal-overlay" id="level-modal">
+            <div class="modal-content">
+                <div class="gift-box" style="font-size:40px">🎉</div>
+                <h2>Level Complete!</h2>
+                <p>Get ready for the next challenge.</p>
+                <button class="btn" onclick="nextLevel()">Next Level</button>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="btn btn-secondary" style="flex:1; margin:0;" onclick="restartCurrentLevel()">Restart</button>
+            <button class="btn btn-secondary" style="flex:1; margin:0; background:#888;" onclick="goHome()">Exit</button>
+        </div>
+    </section>
+
+    <!-- 3. WIN / RESERVED PAGE -->
+    <section id="win-section" class="section">
+        <div class="gift-box">🏆</div>
+        <h1>All Stages Cleared!</h1>
+        <p>You have successfully solved all 5 advanced puzzles.</p>
+        <h3 style="color: var(--highlight);">Gift Reserved Successfully</h3>
+        <button class="btn" onclick="goToClaim()">Claim My Gift</button>
+    </section>
+
+    <!-- 4. CLAIM PAGE -->
+    <section id="claim-section" class="section">
+        <h2>Final Verification</h2>
+        <p>To ship your gift, please send this offer to 5 friends to unlock the form.</p>
+        
+        <div class="progress-container">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
+                <span>Invites</span>
+                <span id="invite-count">0/5</span>
+            </div>
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+
+        <div class="share-btns">
+            <button class="share-btn" style="background:#25D366;" onclick="sendInvite()">WhatsApp</button>
+            <button class="share-btn" style="background:#3b5998;" onclick="sendInvite()">Facebook</button>
+            <button class="share-btn" style="background:#1da1f2;" onclick="sendInvite()">Twitter</button>
+            <button class="share-btn" style="background:#333;" onclick="sendInvite()">Copy Link</button>
+        </div>
+
+        <p id="status-msg" style="margin-top:15px; min-height: 20px; font-size: 0.9rem;"></p>
+        <button id="final-submit-btn" class="btn" disabled onclick="finishGame()">Confirm Shipping</button>
+    </section>
+
+    <!-- 5. END PAGE -->
+    <section id="end-section" class="section">
+        <div class="gift-box">✅</div>
+        <h1>Order Confirmed</h1>
+        <p>Thank you for playing!</p>
+        <p>Gift ID: <strong>#WG-9920</strong></p>
+        <button class="btn" onclick="location.reload()">Play Again</button>
+    </section>
+
+</main>
+
+<script>
+    /* --- DATA --- */
+    const testimonials = [
+        { name: "Alice", text: "Level 5 was tough but worth it!" },
+        { name: "Mark", text: "Got my gift in 3 days. Amazing." },
+        { name: "Sarah", text: "Fun way to pass time." },
+        { name: "John", text: "Addictive puzzle game." }
+    ];
+
+    // Grid is 4 columns x 5 rows
+    // Block Types: 2=Main(2x2), 1=Vertical(1x2), -1=Horizontal(2x1), 0=Small(1x1)
+    const LEVELS = [
+        {
+            // Level 1: Very Simple (1 min)
+            time: 60,
+            blocks: [
+                { id: 'main', type: 2, x: 1, y: 0, w: 2, h: 2 },
+                { id: 'v1', type: 1, x: 0, y: 0, w: 1, h: 2 },
+                { id: 'v2', type: 1, x: 3, y: 0, w: 1, h: 2 },
+                { id: 'v3', type: 1, x: 0, y: 2, w: 1, h: 2 },
+                { id: 'v4', type: 1, x: 3, y: 2, w: 1, h: 2 },
+                { id: 'h1', type: -1, x: 1, y: 2, w: 2, h: 1 },
+                { id: 's1', type: 0, x: 1, y: 3, w: 1, h: 1 },
+                { id: 's2', type: 0, x: 2, y: 3, w: 1, h: 1 },
+                { id: 's3', type: 0, x: 0, y: 4, w: 1, h: 1 },
+                { id: 's4', type: 0, x: 3, y: 4, w: 1, h: 1 }
+            ]
+        },
+        {
+            // Level 2: Moderate (1.5 min)
+            time: 90,
+            blocks: [
+                { id: 'main', type: 2, x: 1, y: 0, w: 2, h: 2 },
+                { id: 'v1', type: 1, x: 0, y: 0, w: 1, h: 2 },
+                { id: 'v2', type: 1, x: 3, y: 0, w: 1, h: 2 },
+                { id: 's1', type: 0, x: 1, y: 2, w: 1, h: 1 },
+                { id: 's2', type: 0, x: 2, y: 2, w: 1, h: 1 },
+                { id: 'h1', type: -1, x: 0, y: 2, w: 2, h: 1 },
+                { id: 'h2', type: -1, x: 2, y: 2, w: 2, h: 1 },
+                { id: 'v3', type: 1, x: 1, y: 3, w: 1, h: 2 },
+                { id: 'v4', type: 1, x: 2, y: 3, w: 1, h: 2 }
+            ]
+        },
+        {
+            // Level 3: Tricky (2 min)
+            time: 120,
+            blocks: [
+                { id: 'main', type: 2, x: 1, y: 1, w: 2, h: 2 }, // Main centered vertically
+                { id: 'v1', type: 1, x: 0, y: 0, w: 1, h: 2 },
+                { id: 'v2', type: 1, x: 1, y: 0, w: 1, h: 1 }, // Small vertical acting as 1x1
+                { id: 'v3', type: 1, x: 2, y: 0, w: 1, h: 1 }, // Small vertical acting as 1x1
+                { id: 'v4', type: 1, x: 3, y: 0, w: 1, h: 2 },
+                { id: 's1', type: 0, x: 1, y: 3, w: 1, h: 1 },
+                { id: 's2', type: 0, x: 2, y: 3, w: 1, h: 1 },
+                { id: 'h1', type: -1, x: 0, y: 3, w: 2, h: 1 },
+                { id: 'h2', type: -1, x: 2, y: 3, w: 2, h: 1 }
+            ]
+        },
+        {
+            // Level 4: Hard (3 min) - Main starts left
+            time: 180,
+            blocks: [
+                { id: 'main', type: 2, x: 0, y: 0, w: 2, h: 2 },
+                { id: 'v1', type: 1, x: 2, y: 0, w: 1, h: 2 },
+                { id: 'v2', type: 1, x: 3, y: 0, w: 1, h: 2 },
+                { id: 'h1', type: -1, x: 2, y: 2, w: 2, h: 1 },
+                { id: 'v3', type: 1, x: 0, y: 2, w: 1, h: 2 },
+                { id: 's1', type: 0, x: 1, y: 2, w: 1, h: 1 },
+                { id: 's2', type: 0, x: 2, y: 3, w: 1, h: 1 },
+                { id: 's3', type: 0, x: 3, y: 3, w: 1, h: 1 },
+                { id: 'h2', type: -1, x: 0, y: 4, w: 2, h: 1 },
+                { id: 's4', type: 0, x: 2, y: 4, w: 1, h: 1 },
+                { id: 's5', type: 0, x: 3, y: 4, w: 1, h: 1 }
+            ]
+        },
+        {
+            // Level 5: Advanced (5 min) - Dense packing
+            time: 300,
+            blocks: [
+                { id: 'main', type: 2, x: 1, y: 0, w: 2, h: 2 },
+                { id: 'v1', type: 1, x: 0, y: 0, w: 1, h: 2 },
+                { id: 'v2', type: 1, x: 3, y: 0, w: 1, h: 2 },
+                { id: 'v3', type: 1, x: 0, y: 2, w: 1, h: 2 },
+                { id: 'v4', type: 1, x: 3, y: 2, w: 1, h: 2 },
+                { id: 'v5', type: 1, x: 0, y: 4, w: 1, h: 1 }, // Used as 1x1 here
+                { id: 'v6', type: 1, x: 3, y: 4, w: 1, h: 1 }, // Used as 1x1 here
+                { id: 's1', type: 0, x: 1, y: 2, w: 1, h: 1 },
+                { id: 's2', type: 0, x: 2, y: 2, w: 1, h: 1 },
+                { id: 's3', type: 0, x: 1, y: 3, w: 1, h: 1 },
+                { id: 's4', type: 0, x: 2, y: 3, w: 1, h: 1 }
+            ]
+        }
+    ];
+
+    /* --- STATE --- */
+    let currentLevel = 1;
+    let blocks = [];
+    let moves = 0;
+    let timerInterval;
+    let timeLeft = 60;
+    let gameActive = false;
+    let inviteCount = 0;
+    const MAX_LEVELS = 5;
+
+    /* --- INIT --- */
+    document.addEventListener('DOMContentLoaded', () => {
+        renderTestimonials();
+        updateHomeProgress();
+    });
+
+    function renderTestimonials() {
+        document.getElementById('testimonials-container').innerHTML = testimonials.map(t => 
+            `<div class="comment-card">"${t.text}"<br><small>- ${t.name}</small></div>`
+        ).join('');
+    }
+
+    /* --- NAVIGATION --- */
+    function showSection(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function goHome() {
+        stopGame();
+        showSection('home-section');
+        updateHomeProgress();
+    }
+
+    function updateHomeProgress() {
+        // Display the level the user is about to play
+        let text = `Start Level ${currentLevel}`;
+        if (currentLevel > MAX_LEVELS) text = "You have completed all levels!";
+        document.getElementById('home-level-badge').textContent = text;
+    }
+
+    function goToGame() {
+        if (currentLevel > MAX_LEVELS) {
+            alert("You have already completed all stages! Please claim your gift.");
+            showSection('win-section');
+            return;
+        }
+        loadLevel(currentLevel);
+        showSection('game-section');
+    }
+
+    function goToClaim() {
+        showSection('claim-section');
+        inviteCount = 0;
+        updateInviteUI();
+    }
+
+    function finishGame() {
+        showSection('end-section');
+    }
+
+    /* --- GAME LOGIC --- */
+    function loadLevel(lvlIndex) {
+        const levelData = LEVELS[lvlIndex - 1];
+        
+        // Deep copy blocks
+        blocks = JSON.parse(JSON.stringify(levelData.blocks));
+        
+        moves = 0;
+        timeLeft = levelData.time;
+        gameActive = true;
+        
+        document.getElementById('level-display').textContent = lvlIndex;
+        
+        // Reset Timer UI
+        const timerEl = document.getElementById('timer');
+        timerEl.classList.remove('timer-warning');
+        updateTimerDisplay();
+        
+        renderBlocks();
+        startTimer();
+    }
+
+    function restartCurrentLevel() {
+        stopGame();
+        loadLevel(currentLevel);
+    }
+
+    function nextLevel() {
+        document.getElementById('level-modal').style.display = 'none';
+        currentLevel++;
+        if (currentLevel > MAX_LEVELS) {
+            showSection('win-section');
+        } else {
+            loadLevel(currentLevel);
+        }
+    }
+
+    function startTimer() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+            if (!gameActive) return;
+            timeLeft--;
+            updateTimerDisplay();
+
+            if (timeLeft <= 10) {
+                document.getElementById('timer').classList.add('timer-warning');
+            }
+
+            if (timeLeft <= 0) {
+                gameOver();
+            }
+        }, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+        const s = (timeLeft % 60).toString().padStart(2, '0');
+        document.getElementById('timer').textContent = `${m}:${s}`;
+    }
+
+    function stopGame() {
+        gameActive = false;
+        clearInterval(timerInterval);
+    }
+
+    function gameOver() {
+        stopGame();
+        const board = document.getElementById('board');
+        board.style.transform = "translate(5px, 5px)";
+        setTimeout(() => board.style.transform = "translate(-5px, -5px)", 100);
+        setTimeout(() => board.style.transform = "none", 200);
+        
+        // Simple feedback
+        const msg = document.createElement('div');
+        msg.textContent = "Time Up! Try Again.";
+        msg.style.position = 'absolute';
+        msg.style.top = '50%';
+        msg.style.left = '0';
+        msg.style.width = '100%';
+        msg.style.textAlign = 'center';
+        msg.style.background = 'rgba(255,0,0,0.8)';
+        msg.style.color = 'white';
+        msg.style.padding = '10px';
+        msg.style.zIndex = '50';
+        board.appendChild(msg);
+        
+        setTimeout(() => {
+            msg.remove();
+            restartCurrentLevel();
+        }, 1500);
+    }
+
+    function renderBlocks() {
+        const board = document.getElementById('board');
+        board.querySelectorAll('.block').forEach(b => b.remove());
+
+        blocks.forEach(block => {
+            const el = document.createElement('div');
+            el.className = `block ${block.id === 'main' ? 'main-block' : ''}`;
+            // 25% width = 1 col, 20% height = 1 row
+            el.style.width = (block.w * 25) + '%';
+            el.style.height = (block.h * 20) + '%';
+            el.style.left = (block.x * 25) + '%';
+            el.style.top = (block.y * 20) + '%';
+            el.dataset.id = block.id;
+            el.onclick = (e) => {
+                e.stopPropagation(); // prevent clicking board bg
+                handleBlockClick(block);
+            };
+            board.appendChild(el);
+        });
+    }
+
+    function handleBlockClick(block) {
+        if (!gameActive) return;
+        const dirs = [{dx:0, dy:-1}, {dx:0, dy:1}, {dx:-1, dy:0}, {dx:1, dy:0}];
+        
+        for (let d of dirs) {
+            if (canMove(block, d.dx, d.dy)) {
+                moveBlock(block, d.dx, d.dy);
+                return;
+            }
+        }
+    }
+
+    function canMove(block, dx, dy) {
+        const newX = block.x + dx;
+        const newY = block.y + dy;
+        if (newX < 0 || newX + block.w > 4 || newY < 0 || newY + block.h > 5) return false;
+
+        // Collision Check
+        for (let other of blocks) {
+            if (other.id === block.id) continue;
+            if (newX < other.x + other.w && newX + block.w > other.x &&
+                newY < other.y + other.h && newY + block.h > other.y) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function moveBlock(block, dx, dy) {
+        block.x += dx;
+        block.y += dy;
+        const el = document.querySelector(`.block[data-id="${block.id}"]`);
+        el.style.left = (block.x * 25) + '%';
+        el.style.top = (block.y * 20) + '%';
+        checkWin();
+    }
+
+    function checkWin() {
+        const main = blocks.find(b => b.id === 'main');
+        // Main is 2x2. Win pos is x=1, y=3 (occupying 1,3 to 3,5 area logic)
+        // Target: Center bottom.
+        if (main.x === 1 && main.y === 3) {
+            stopGame();
+            // Show Next Level Modal
+            setTimeout(() => {
+                document.getElementById('level-modal').style.display = 'flex';
+            }, 300);
+        }
+    }
+
+    /* --- CLAIM LOGIC --- */
+    function sendInvite() {
+        if (inviteCount < 5) {
+            inviteCount++;
+            updateInviteUI();
+        }
+    }
+
+    function updateInviteUI() {
+        document.getElementById('invite-count').textContent = `${inviteCount}/5`;
+        document.getElementById('progress-bar').style.width = (inviteCount / 5 * 100) + '%';
+        const btn = document.getElementById('final-submit-btn');
+        const msg = document.getElementById('status-msg');
+        
+        if (inviteCount >= 5) {
+            btn.disabled = false;
+            msg.textContent = "Verification Complete! Ready to ship.";
+            msg.style.color = "green";
+        } else {
+            btn.disabled = true;
+            msg.textContent = `Send to ${5 - inviteCount} more friends...`;
+            msg.style.color = "#666";
+        }
+    }
+
+</script>
+
+</body>
+</html>
