@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Company Promotion & Gift Game - Movable</title>
+    <title>Company Promotion & Gift Game - Level 1 Updated</title>
     <style>
         :root {
             --primary-wood: #d4a373;
@@ -23,7 +23,7 @@
             padding: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             -webkit-tap-highlight-color: transparent;
-            user-select: none; /* Prevents text selection during play */
+            user-select: none;
         }
 
         body {
@@ -32,7 +32,7 @@
             display: flex;
             flex-direction: column;
             min-height: 100vh;
-            overflow: hidden; /* Prevent body scroll */
+            overflow: hidden;
         }
 
         /* --- Header --- */
@@ -63,7 +63,7 @@
             align-items: center;
             padding: 10px;
             position: relative;
-            overflow-y: auto; /* Allow internal scrolling if needed, but game fits screen */
+            overflow-y: auto;
         }
 
         .section {
@@ -75,14 +75,13 @@
             padding: 1.5rem;
             box-shadow: var(--shadow);
             animation: fadeIn 0.4s ease;
-            touch-action: pan-y; /* Allow vertical scroll in sections */
+            touch-action: pan-y;
         }
 
         .section.active {
             display: block;
         }
 
-        /* Disable scroll specifically on game section to allow swiping blocks */
         #game-section {
             touch-action: none;
             overflow: hidden;
@@ -183,7 +182,7 @@
             border: 8px solid var(--dark-wood);
             border-radius: 6px;
             box-shadow: inset 0 0 15px rgba(0,0,0,0.2);
-            touch-action: none; /* Crucial for swiping blocks */
+            touch-action: none;
         }
 
         .exit-zone {
@@ -212,13 +211,10 @@
             font-size: 20px;
             color: #fff;
             z-index: 10;
-            touch-action: none; /* Prevents browser handling of touch on blocks */
+            touch-action: none;
         }
 
-        .block:active {
-            cursor: grabbing;
-            transform: scale(0.98); /* Visual feedback when touching */
-        }
+        .block:active { transform: scale(0.98); cursor: grabbing; }
 
         .block.main-block {
             background: linear-gradient(135deg, #e76f51, #c0392b);
@@ -234,7 +230,7 @@
         .timer-warning { color: #d32f2f; animation: pulse 1s infinite; }
         @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
-        /* --- Modal for Next Level --- */
+        /* --- Modal --- */
         .modal-overlay {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -254,7 +250,7 @@
         }
         @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* --- Win/Claim Styles --- */
+        /* --- Win/Claim --- */
         .gift-box { font-size: 60px; margin: 10px auto; display: block; text-align: center; }
         .progress-container { background: #eee; border-radius: 10px; padding: 10px; margin: 15px 0; }
         .progress-bar { height: 15px; background: var(--highlight); border-radius: 8px; width: 0%; transition: width 0.3s; }
@@ -279,7 +275,7 @@
     <!-- 1. HOME PAGE -->
     <section id="home-section" class="section active">
         <h1>Win Exclusive Gifts!</h1>
-        <p>Solve 5 levels of puzzles. <strong>Slide blocks to move.</strong></p>
+        <p>Solve 5 levels. Level 1: 1 Hour Time Limit!</p>
         <div style="text-align: center; margin-bottom: 20px;">
             <span class="level-badge" id="home-level-badge">Current Progress: Level 1</span>
         </div>
@@ -294,7 +290,7 @@
     <section id="game-section" class="section">
         <div class="game-stats">
             <span>Level: <span id="level-display">1</span>/5</span>
-            <span>Time: <span id="timer">10:00</span></span>
+            <span>Time: <span id="timer">01:00:00</span></span>
         </div>
         <div class="game-board-container" id="board">
             <div class="exit-zone"></div>
@@ -370,27 +366,30 @@
         { name: "John", text: "Addictive puzzle game." }
     ];
 
-    // Grid is 4 columns x 5 rows
     const LEVELS = [
         {
-            // Level 1: 30 Minute (1800s)
-            time: 1800,
+            // Level 1: 1 Hour (3600s) - Updated Blocks with 3 Horizontal
+            time: 3600,
             blocks: [
                 { id: 'main', type: 2, x: 1, y: 0, w: 2, h: 2 },
                 { id: 'v1', type: 1, x: 0, y: 0, w: 1, h: 2 },
                 { id: 'v2', type: 1, x: 3, y: 0, w: 1, h: 2 },
-                { id: 'v3', type: 1, x: 0, y: 2, w: 1, h: 2 },
-                { id: 'v4', type: 1, x: 3, y: 2, w: 1, h: 2 },
-                { id: 'h1', type: -1, x: 1, y: 2, w: 2, h: 1 },
-                { id: 's1', type: 0, x: 1, y: 3, w: 1, h: 1 },
-                { id: 's2', type: 0, x: 2, y: 3, w: 1, h: 1 },
+                
+                // Requested: Add more 3 horizontal blocks
+                { id: 'h1', type: -1, x: 1, y: 2, w: 2, h: 1 }, 
+                { id: 'h2', type: -1, x: 0, y: 3, w: 2, h: 1 },
+                { id: 'h3', type: -1, x: 2, y: 3, w: 2, h: 1 },
+                
+                // Fillers to complete the grid and make it solvable
+                { id: 's1', type: 0, x: 0, y: 2, w: 1, h: 1 }, 
+                { id: 's2', type: 0, x: 3, y: 2, w: 1, h: 1 },
                 { id: 's3', type: 0, x: 0, y: 4, w: 1, h: 1 },
                 { id: 's4', type: 0, x: 3, y: 4, w: 1, h: 1 }
             ]
         },
         {
-            // Level 2: 10 Min (600s)
-            time: 600,
+            // Level 2: 1.5 Min (90s)
+            time: 90,
             blocks: [
                 { id: 'main', type: 2, x: 1, y: 0, w: 2, h: 2 },
                 { id: 'v1', type: 1, x: 0, y: 0, w: 1, h: 2 },
@@ -404,8 +403,8 @@
             ]
         },
         {
-            // Level 3: 10 Min (600s)
-            time: 600,
+            // Level 3: 2 Min (120s)
+            time: 120,
             blocks: [
                 { id: 'main', type: 2, x: 1, y: 1, w: 2, h: 2 },
                 { id: 'v1', type: 1, x: 0, y: 0, w: 1, h: 2 },
@@ -419,8 +418,8 @@
             ]
         },
         {
-            // Level 4: 10 Min (600s)
-            time: 600,
+            // Level 4: 3 Min (180s)
+            time: 180,
             blocks: [
                 { id: 'main', type: 2, x: 0, y: 0, w: 2, h: 2 },
                 { id: 'v1', type: 1, x: 2, y: 0, w: 1, h: 2 },
@@ -436,8 +435,8 @@
             ]
         },
         {
-            // Level 5: 10 Min (600s)
-            time: 600,
+            // Level 5: 5 Min (300s)
+            time: 300,
             blocks: [
                 { id: 'main', type: 2, x: 1, y: 0, w: 2, h: 2 },
                 { id: 'v1', type: 1, x: 0, y: 0, w: 1, h: 2 },
@@ -475,7 +474,6 @@
         renderTestimonials();
         updateHomeProgress();
         
-        // Global Drag Listeners
         document.addEventListener('mousemove', handleGlobalMove);
         document.addEventListener('touchmove', handleGlobalMove, { passive: false });
         
@@ -577,9 +575,19 @@
     }
 
     function updateTimerDisplay() {
-        const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
-        const s = (timeLeft % 60).toString().padStart(2, '0');
-        document.getElementById('timer').textContent = `${m}:${s}`;
+        let h, m, s;
+        
+        // Handle Hours if > 3600 seconds
+        if (timeLeft >= 3600) {
+            h = Math.floor(timeLeft / 3600).toString().padStart(2, '0');
+            m = Math.floor((timeLeft % 3600) / 60).toString().padStart(2, '0');
+            s = (timeLeft % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${h}:${m}:${s}`;
+        } else {
+            m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            s = (timeLeft % 60).toString().padStart(2, '0');
+            document.getElementById('timer').textContent = `${m}:${s}`;
+        }
     }
 
     function stopGame() {
@@ -626,7 +634,6 @@
             el.style.top = (block.y * 20) + '%';
             el.dataset.id = block.id;
             
-            // Attach Touch/Mouse Start events
             el.addEventListener('mousedown', (e) => startDrag(e, block));
             el.addEventListener('touchstart', (e) => startDrag(e, block), { passive: false });
             
@@ -638,7 +645,7 @@
 
     function startDrag(e, block) {
         if (!gameActive) return;
-        e.preventDefault(); // Prevent text selection
+        e.preventDefault();
         
         activeBlockId = block.id;
         isDragging = true;
@@ -654,7 +661,7 @@
 
     function handleGlobalMove(e) {
         if (!isDragging) return;
-        e.preventDefault(); // Prevent screen scrolling while dragging block
+        e.preventDefault();
     }
 
     function handleGlobalEnd(e) {
@@ -672,26 +679,24 @@
 
         const diffX = endX - dragStartX;
         const diffY = endY - dragStartY;
-        const threshold = 15; // Min pixels to count as a swipe
+        const threshold = 15;
 
         const block = blocks.find(b => b.id === activeBlockId);
 
         if (Math.abs(diffX) > Math.abs(diffY)) {
             // Horizontal
             if (Math.abs(diffX) > threshold) {
-                if (diffX > 0) tryMove(block, 1, 0); // Right
-                else tryMove(block, -1, 0); // Left
+                if (diffX > 0) tryMove(block, 1, 0);
+                else tryMove(block, -1, 0);
             } else {
-                // Small movement, try click logic (find any valid move)
                 handleBlockClick(block);
             }
         } else {
             // Vertical
             if (Math.abs(diffY) > threshold) {
-                if (diffY > 0) tryMove(block, 0, 1); // Down
-                else tryMove(block, 0, -1); // Up
+                if (diffY > 0) tryMove(block, 0, 1);
+                else tryMove(block, 0, -1);
             } else {
-                // Small movement, try click logic
                 handleBlockClick(block);
             }
         }
@@ -780,4 +785,3 @@
 
 </body>
 </html>
-
